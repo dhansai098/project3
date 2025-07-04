@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Webhook Activity</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .event { margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <h2>Webhook Events</h2>
+  <div id="events"></div>
+
+  <script>
+    function formatEvent(event) {
+      const ts = new Date(event.timestamp).toUTCString();
+      if (event.event === "push") {
+        return `${event.author} pushed to ${event.to_branch} on ${ts}`;
+      } else if (event.event === "pull_request") {
+        return `${event.author} submitted a pull request from ${event.from_branch} to ${event.to_branch} on ${ts}`;
+      } else if (event.event === "merge") {
+        return `${event.author} merged branch ${event.from_branch} to ${event.to_branch} on ${ts}`;
+      }
+      return "";
+    }
+
+    async function fetchEvents() {
+      const res = await fetch('http://localhost:5000/events');
+      const data = await res.json();
+      const html = data.map(formatEvent).map(e => `<div class="event">${e}</div>`).join('');
+      document.getElementById("events").innerHTML = html;
+    }
+
+    fetchEvents();
+    setInterval(fetchEvents, 15000);
+  </script>
+</body>
+</html>
